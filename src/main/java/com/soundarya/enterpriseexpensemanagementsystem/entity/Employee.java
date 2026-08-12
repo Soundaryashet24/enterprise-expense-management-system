@@ -23,4 +23,16 @@ public class Employee {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
 }
