@@ -3,12 +3,6 @@ A backend application for managing employee expenses, approvals, reimbursements,
 
 ### Architecture
 
-Client
-  ↓
-Controller
-  ↓
-Service
-  ↓
-Repository
-  ↓
-MySQL
+Client -> Controller -> Service -> Repository -> MySQL
+  
+
