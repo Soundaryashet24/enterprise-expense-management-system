@@ -1,6 +1,7 @@
 package com.soundarya.enterpriseexpensemanagementsystem.controller;
 
-import com.soundarya.enterpriseexpensemanagementsystem.entity.Employee;
+import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeRequestDTO;
+import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.service.EmployeeService;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,28 +18,35 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public List<Employee> getAllEmployees() {
+    public List<EmployeeResponseDTO> getAllEmployees() {
         return employeeService.getAllEmployees();
     }
 
     @GetMapping("/{id}")
-    public Employee getEmployeeById(@PathVariable Long id) {
+    public EmployeeResponseDTO getEmployeeById(
+            @PathVariable Long id) {
+
         return employeeService.getEmployeeById(id);
     }
 
     @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee) {
-        return employeeService.createEmployee(employee);
+    public EmployeeResponseDTO createEmployee(
+            @RequestBody EmployeeRequestDTO request) {
+
+        return employeeService.createEmployee(request);
     }
 
     @PutMapping("/{id}")
-    public Employee updateEmployee(@PathVariable Long id,
-                                   @RequestBody Employee employeeDetails) {
-        return employeeService.updateEmployee(id, employeeDetails);
+    public EmployeeResponseDTO updateEmployee(
+            @PathVariable Long id,
+            @RequestBody EmployeeRequestDTO request) {
+
+        return employeeService.updateEmployee(id, request);
     }
 
     @DeleteMapping("/{id}")
     public void deleteEmployee(@PathVariable Long id) {
+
         employeeService.deleteEmployee(id);
     }
 }
