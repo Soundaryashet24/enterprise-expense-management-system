@@ -4,6 +4,7 @@ import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeRequestDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.service.EmployeeService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class EmployeeController {
 
     @PostMapping
     public EmployeeResponseDTO createEmployee(
-            @RequestBody EmployeeRequestDTO request) {
+            @Valid @RequestBody EmployeeRequestDTO request) {
 
         return employeeService.createEmployee(request);
     }
@@ -39,7 +40,7 @@ public class EmployeeController {
     @PutMapping("/{id}")
     public EmployeeResponseDTO updateEmployee(
             @PathVariable Long id,
-            @RequestBody EmployeeRequestDTO request) {
+            @Valid @RequestBody EmployeeRequestDTO request) {
 
         return employeeService.updateEmployee(id, request);
     }
