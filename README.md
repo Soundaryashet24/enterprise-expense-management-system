@@ -3,6 +3,11 @@ A backend application for managing employee expenses, approvals, reimbursements,
 
 ### Architecture
 
-Client -> Controller -> Service -> Repository -> MySQL
+Client ->  REST Controller ->  Request / Response DTO ->  Service -> Repository -> MySQL
   
+### Error Handling Flow
 
+Controller -> Service -> EmployeeNotFoundException -> GlobalExceptionHandler -> HTTP 404 NOT FOUND
+   
+
+              
