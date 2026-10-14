@@ -3,9 +3,13 @@ package com.soundarya.enterpriseexpensemanagementsystem.controller;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeRequestDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.service.EmployeeService;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -19,35 +23,57 @@ public class EmployeeController {
     }
 
     @GetMapping
-    public List<EmployeeResponseDTO> getAllEmployees() {
-        return employeeService.getAllEmployees();
+    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees() {
+
+        return ResponseEntity.ok(
+                employeeService.getAllEmployees()
+        );
     }
 
     @GetMapping("/{id}")
-    public EmployeeResponseDTO getEmployeeById(
+    public ResponseEntity<EmployeeResponseDTO> getEmployeeById(
             @PathVariable Long id) {
 
-        return employeeService.getEmployeeById(id);
+        return ResponseEntity.ok(
+                employeeService.getEmployeeById(id)
+        );
     }
 
     @PostMapping
-    public EmployeeResponseDTO createEmployee(
+    public ResponseEntity<EmployeeResponseDTO> createEmployee(
             @Valid @RequestBody EmployeeRequestDTO request) {
 
-        return employeeService.createEmployee(request);
+        EmployeeResponseDTO createdEmployee =
+                employeeService.createEmployee(request);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdEmployee.getId())
+                .toUri();
+
+        return ResponseEntity
+                .created(location)
+                .body(createdEmployee);
     }
 
     @PutMapping("/{id}")
-    public EmployeeResponseDTO updateEmployee(
+    public ResponseEntity<EmployeeResponseDTO> updateEmployee(
             @PathVariable Long id,
             @Valid @RequestBody EmployeeRequestDTO request) {
 
-        return employeeService.updateEmployee(id, request);
+        EmployeeResponseDTO updatedEmployee =
+                employeeService.updateEmployee(id, request);
+
+        return ResponseEntity.ok(updatedEmployee);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteEmployee(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteEmployee(
+            @PathVariable Long id) {
 
         employeeService.deleteEmployee(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
