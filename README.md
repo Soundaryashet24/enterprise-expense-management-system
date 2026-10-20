@@ -78,3 +78,13 @@ Error responses are handled through the application's centralized exception hand
 ### API Design
 
 The Employee API uses request and response DTOs to separate API data from the JPA entity. The controller delegates operations to the service layer, which uses the repository to interact with the database.
+ ### Automated Tests
+
+The EmployeeService test suite uses JUnit 5 and Mockito to verify
+successful employee operations, empty results, missing employee
+scenarios, and repository interactions.
+
+Run the Maven test suite from the project root:
+
+```bash
+mvn test
