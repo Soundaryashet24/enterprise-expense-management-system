@@ -1,13 +1,14 @@
+
 package com.soundarya.enterpriseexpensemanagementsystem.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.soundarya.enterpriseexpensemanagementsystem.dto.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,30 +16,42 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmployeeNotFoundException.class)
-    public ResponseEntity<String> handleEmployeeNotFound(
+    public ResponseEntity<ApiErrorResponse> handleEmployeeNotFound(
             EmployeeNotFoundException exception) {
 
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(exception.getMessage());
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                exception.getMessage(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(response);
     }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationErrors(
+    public ResponseEntity<ApiErrorResponse> handleValidationErrors(
             MethodArgumentNotValidException exception) {
 
-        Map<String, String> errors = new LinkedHashMap<>();
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
 
         exception.getBindingResult()
                 .getFieldErrors()
-                .forEach(error ->
-                        errors.putIfAbsent(
-                                error.getField(),
-                                error.getDefaultMessage()
-                        )
-                );
+                .forEach(error -> fieldErrors.putIfAbsent(
+                        error.getField(),
+                        error.getDefaultMessage()
+                ));
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(errors);
+        ApiErrorResponse response = new ApiErrorResponse(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "Request validation failed",
+                fieldErrors
+        );
+
+        return ResponseEntity.badRequest().body(response);
     }
 }
