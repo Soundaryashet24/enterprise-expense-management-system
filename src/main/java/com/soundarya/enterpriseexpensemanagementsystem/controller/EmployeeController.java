@@ -1,9 +1,9 @@
+
 package com.soundarya.enterpriseexpensemanagementsystem.controller;
 
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeRequestDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.service.EmployeeService;
-
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,8 +52,7 @@ public class EmployeeController {
                 .buildAndExpand(createdEmployee.getId())
                 .toUri();
 
-        return ResponseEntity
-                .created(location)
+        return ResponseEntity.created(location)
                 .body(createdEmployee);
     }
 
