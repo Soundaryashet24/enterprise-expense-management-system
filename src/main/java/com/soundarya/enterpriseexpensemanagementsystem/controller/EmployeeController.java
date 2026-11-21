@@ -3,7 +3,9 @@ package com.soundarya.enterpriseexpensemanagementsystem.controller;
 
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeRequestDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeResponseDTO;
+import com.soundarya.enterpriseexpensemanagementsystem.dto.ExpenseResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.service.EmployeeService;
+import com.soundarya.enterpriseexpensemanagementsystem.service.ExpenseService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +19,13 @@ import java.util.List;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final ExpenseService expenseService;
+    public EmployeeController(
+            EmployeeService employeeService,
+            ExpenseService expenseService) {
 
-    public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
+        this.expenseService = expenseService;
     }
 
     @GetMapping
@@ -74,5 +80,13 @@ public class EmployeeController {
         employeeService.deleteEmployee(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/expenses")
+    public ResponseEntity<List<ExpenseResponseDTO>> getEmployeeExpenses(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                expenseService.getExpensesByEmployee(id));
     }
 }

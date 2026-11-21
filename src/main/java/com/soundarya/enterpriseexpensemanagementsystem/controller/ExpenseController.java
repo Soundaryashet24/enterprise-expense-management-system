@@ -69,4 +69,28 @@ public class ExpenseController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/employee/{employeeId}")
+    public ResponseEntity<List<ExpenseResponseDTO>>
+    getExpensesByEmployee(@PathVariable Long employeeId) {
+
+        return ResponseEntity.ok(
+                expenseService.getExpensesByEmployee(employeeId));
+    }
+
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<ExpenseResponseDTO> approveExpense(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                expenseService.approveExpense(id));
+    }
+
+    @PatchMapping("/{id}/reject")
+    public ResponseEntity<ExpenseResponseDTO> rejectExpense(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                expenseService.rejectExpense(id));
+    }
 }

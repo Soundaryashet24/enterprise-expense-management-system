@@ -29,6 +29,10 @@ public class Expense {
     @Column(nullable = false, length = 20)
     private ExpenseStatus status = ExpenseStatus.SUBMITTED;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "employee_id", nullable = false)
+    private Employee employee;
+
     public Expense() {
     }
 
@@ -74,5 +78,12 @@ public class Expense {
 
     public void setStatus(ExpenseStatus status) {
         this.status = status;
+    }
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
     }
 }

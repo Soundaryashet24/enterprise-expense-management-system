@@ -13,14 +13,15 @@ public class ExpenseResponseDTO {
     private String description;
     private LocalDate expenseDate;
     private ExpenseStatus status;
-
+    private Long employeeId;
     public ExpenseResponseDTO(
             Long id,
             BigDecimal amount,
             String category,
             String description,
             LocalDate expenseDate,
-            ExpenseStatus status) {
+            ExpenseStatus status,
+            Long employeeId) {
 
         this.id = id;
         this.amount = amount;
@@ -28,6 +29,7 @@ public class ExpenseResponseDTO {
         this.description = description;
         this.expenseDate = expenseDate;
         this.status = status;
+        this.employeeId = employeeId;
     }
 
     public Long getId() {
@@ -52,5 +54,8 @@ public class ExpenseResponseDTO {
 
     public ExpenseStatus getStatus() {
         return status;
+    }
+    public Long getEmployeeId() {
+        return employeeId;
     }
 }

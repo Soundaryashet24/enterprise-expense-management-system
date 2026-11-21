@@ -24,7 +24,8 @@ public class ExpenseRequestDTO {
     @NotNull(message = "Expense date is required")
     @PastOrPresent(message = "Expense date cannot be in the future")
     private LocalDate expenseDate;
-
+    @NotNull(message = "Employee ID is required")
+    private Long employeeId;
     public ExpenseRequestDTO() {
     }
 
@@ -58,5 +59,12 @@ public class ExpenseRequestDTO {
 
     public void setExpenseDate(LocalDate expenseDate) {
         this.expenseDate = expenseDate;
+    }
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 }

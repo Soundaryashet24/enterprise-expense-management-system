@@ -3,9 +3,12 @@ package com.soundarya.enterpriseexpensemanagementsystem.service;
 
 import com.soundarya.enterpriseexpensemanagementsystem.dto.ExpenseRequestDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.ExpenseResponseDTO;
+import com.soundarya.enterpriseexpensemanagementsystem.entity.Employee;
 import com.soundarya.enterpriseexpensemanagementsystem.entity.Expense;
 import com.soundarya.enterpriseexpensemanagementsystem.entity.ExpenseStatus;
+import com.soundarya.enterpriseexpensemanagementsystem.exception.EmployeeNotFoundException;
 import com.soundarya.enterpriseexpensemanagementsystem.exception.ExpenseNotFoundException;
+import com.soundarya.enterpriseexpensemanagementsystem.repository.EmployeeRepository;
 import com.soundarya.enterpriseexpensemanagementsystem.repository.ExpenseRepository;
 
 import org.springframework.stereotype.Service;
@@ -17,9 +20,14 @@ import java.util.List;
 public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public ExpenseService(ExpenseRepository expenseRepository) {
+    public ExpenseService(
+            ExpenseRepository expenseRepository,
+            EmployeeRepository employeeRepository) {
+
         this.expenseRepository = expenseRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     @Transactional(readOnly = true)
@@ -33,26 +41,34 @@ public class ExpenseService {
 
     @Transactional(readOnly = true)
     public ExpenseResponseDTO getExpenseById(Long id) {
+        return mapToResponse(findExpense(id));
+    }
 
-        Expense expense = findExpense(id);
+    @Transactional(readOnly = true)
+    public List<ExpenseResponseDTO> getExpensesByEmployee(Long employeeId) {
 
-        return mapToResponse(expense);
+        findEmployee(employeeId);
+
+        return expenseRepository.findByEmployeeId(employeeId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Transactional
     public ExpenseResponseDTO createExpense(ExpenseRequestDTO request) {
 
-        Expense expense = new Expense();
+        Employee employee = findEmployee(request.getEmployeeId());
 
+        Expense expense = new Expense();
+        expense.setEmployee(employee);
         expense.setAmount(request.getAmount());
         expense.setCategory(request.getCategory());
         expense.setDescription(request.getDescription());
         expense.setExpenseDate(request.getExpenseDate());
         expense.setStatus(ExpenseStatus.SUBMITTED);
 
-        Expense savedExpense = expenseRepository.save(expense);
-
-        return mapToResponse(savedExpense);
+        return mapToResponse(expenseRepository.save(expense));
     }
 
     @Transactional
@@ -61,9 +77,13 @@ public class ExpenseService {
 
         Expense expense = findExpense(id);
 
-        if (expense.getStatus() != ExpenseStatus.SUBMITTED) {
+        ensureSubmitted(expense);
+
+        // Keep the original owner unchanged.
+        if (!expense.getEmployee().getId()
+                .equals(request.getEmployeeId())) {
             throw new IllegalStateException(
-                    "Only submitted expenses can be updated");
+                    "Expense cannot be transferred to another employee");
         }
 
         expense.setAmount(request.getAmount());
@@ -79,12 +99,49 @@ public class ExpenseService {
 
         Expense expense = findExpense(id);
 
-        if (expense.getStatus() != ExpenseStatus.SUBMITTED) {
-            throw new IllegalStateException(
-                    "Only submitted expenses can be deleted");
-        }
+        ensureSubmitted(expense);
 
         expenseRepository.delete(expense);
+    }
+
+    @Transactional
+    public ExpenseResponseDTO approveExpense(Long id) {
+
+        Expense expense = findExpense(id);
+
+        ensureSubmitted(expense);
+
+        expense.setStatus(ExpenseStatus.APPROVED);
+
+        return mapToResponse(expenseRepository.save(expense));
+    }
+
+    @Transactional
+    public ExpenseResponseDTO rejectExpense(Long id) {
+
+        Expense expense = findExpense(id);
+
+        ensureSubmitted(expense);
+
+        expense.setStatus(ExpenseStatus.REJECTED);
+
+        return mapToResponse(expenseRepository.save(expense));
+    }
+
+    private void ensureSubmitted(Expense expense) {
+
+        if (expense.getStatus() != ExpenseStatus.SUBMITTED) {
+            throw new IllegalStateException(
+                    "Only submitted expenses can be modified");
+        }
+    }
+
+    private Employee findEmployee(Long id) {
+
+        return employeeRepository.findById(id)
+                .orElseThrow(() ->
+                        new EmployeeNotFoundException(
+                                "Employee not found with id: " + id));
     }
 
     private Expense findExpense(Long id) {
@@ -103,7 +160,8 @@ public class ExpenseService {
                 expense.getCategory(),
                 expense.getDescription(),
                 expense.getExpenseDate(),
-                expense.getStatus()
+                expense.getStatus(),
+                expense.getEmployee().getId()
         );
     }
 }
