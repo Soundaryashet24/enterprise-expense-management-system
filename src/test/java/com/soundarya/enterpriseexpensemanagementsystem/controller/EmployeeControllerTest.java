@@ -6,6 +6,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.EmployeeResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.exception.EmployeeNotFoundException;
 import com.soundarya.enterpriseexpensemanagementsystem.service.EmployeeService;
+import com.soundarya.enterpriseexpensemanagementsystem.service.ExpenseService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,8 @@ class EmployeeControllerTest {
 
     @Mock
     private EmployeeService employeeService;
+    @Mock
+    private ExpenseService expenseService;
 
     @InjectMocks
     private EmployeeController employeeController;
