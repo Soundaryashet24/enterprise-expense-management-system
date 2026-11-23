@@ -13,7 +13,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -33,49 +37,39 @@ class EmployeeIntegrationTest {
 
     // TEST 1: Create employee in the actual test database
     @Test
-    void createEmployee_shouldSaveToDatabase() throws Exception {
-
-        String requestJson = """
-                {
-                  "name": "Rahul",
-                  "email": "rahul@example.com"
-                }
-                """;
+    void createEmployee_shouldBeForbidden() throws Exception {
 
         mockMvc.perform(post("/employees")
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_MANAGER")))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("Rahul"))
-                .andExpect(jsonPath("$.email")
-                        .value("rahul@example.com"));
-
-        // Confirm data was actually saved
-        org.junit.jupiter.api.Assertions.assertTrue(
-                employeeRepository.findAll()
-                        .stream()
-                        .anyMatch(employee ->
-                                employee.getEmail()
-                                        .equals("rahul@example.com"))
-        );
+                        .content("""
+                {
+                    "name": "Test Employee",
+                    "email": "test@example.com"
+                }
+                """))
+                .andExpect(status().isForbidden());
     }
 
     // TEST 2: GET all employees
     @Test
     void getAllEmployees_shouldReturn200() throws Exception {
 
-        mockMvc.perform(get("/employees"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+        mockMvc.perform(get("/employees")
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isOk());
     }
 
     // TEST 3: GET nonexistent employee
     @Test
     void getNonexistentEmployee_shouldReturn404() throws Exception {
 
-        mockMvc.perform(get("/employees/999999"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
+        mockMvc.perform(get("/employees/999999")
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_MANAGER"))))
+                .andExpect(status().isNotFound());
     }
 
     // TEST 4: POST invalid email

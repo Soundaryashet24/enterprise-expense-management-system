@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,17 +31,15 @@ class EmployeeSecurityTest {
                 .andExpect(status().isUnauthorized());
     }
 
+
     @Test
-    void withValidCredentials_shouldReturn200()
-            throws Exception {
+    void withValidJwt_shouldReturn200() throws Exception {
 
         mockMvc.perform(get("/employees")
-                        .with(httpBasic(
-                                "testuser",
-                                "test-password-only")))
+                        .with(jwt().authorities(
+                                new SimpleGrantedAuthority("ROLE_MANAGER"))))
                 .andExpect(status().isOk());
     }
-
     @Test
     void withWrongPassword_shouldReturn401()
             throws Exception {

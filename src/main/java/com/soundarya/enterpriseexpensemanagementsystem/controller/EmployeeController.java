@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.net.URI;
 import java.util.List;
 
@@ -29,6 +29,7 @@ public class EmployeeController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees() {
 
         return ResponseEntity.ok(
@@ -37,6 +38,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<EmployeeResponseDTO> getEmployeeById(
             @PathVariable Long id) {
 
@@ -46,6 +48,7 @@ public class EmployeeController {
     }
 
     @PostMapping
+    @PreAuthorize("denyAll()")
     public ResponseEntity<EmployeeResponseDTO> createEmployee(
             @Valid @RequestBody EmployeeRequestDTO request) {
 
@@ -63,6 +66,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("denyAll()")
     public ResponseEntity<EmployeeResponseDTO> updateEmployee(
             @PathVariable Long id,
             @Valid @RequestBody EmployeeRequestDTO request) {
@@ -74,6 +78,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("denyAll()")
     public ResponseEntity<Void> deleteEmployee(
             @PathVariable Long id) {
 
@@ -83,8 +88,11 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/expenses")
+    @PreAuthorize(
+            "@expenseAccess.isSelfOrManager(authentication, #id)"
+    )
     public ResponseEntity<List<ExpenseResponseDTO>> getEmployeeExpenses(
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
 
         return ResponseEntity.ok(
                 expenseService.getExpensesByEmployee(id));
