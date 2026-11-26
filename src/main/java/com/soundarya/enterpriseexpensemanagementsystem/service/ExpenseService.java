@@ -11,12 +11,16 @@ import com.soundarya.enterpriseexpensemanagementsystem.exception.ExpenseNotFound
 import com.soundarya.enterpriseexpensemanagementsystem.repository.EmployeeRepository;
 import com.soundarya.enterpriseexpensemanagementsystem.repository.ExpenseRepository;
 import com.soundarya.enterpriseexpensemanagementsystem.security.ExpenseAccess;
-
+import com.soundarya.enterpriseexpensemanagementsystem.entity.ExpenseStatus;
+import com.soundarya.enterpriseexpensemanagementsystem.specification.ExpenseSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -211,4 +215,61 @@ public class ExpenseService {
 
         return mapToResponse(expenseRepository.save(expense));
     }
+
+    public Page<ExpenseResponseDTO> searchExpenses(
+            ExpenseStatus status,
+            String category,
+            Long employeeId,
+            int page,
+            int size,
+            String sortBy,
+            String direction) {
+
+        // Preserve Day 16 manager-only access.
+        requireManager();
+
+        if (page < 0) {
+            throw new IllegalArgumentException(
+                    "Page number cannot be negative");
+        }
+
+        if (size < 1 || size > 100) {
+            throw new IllegalArgumentException(
+                    "Page size must be between 1 and 100");
+        }
+
+        // Allow only known sortable properties.
+        java.util.Set<String> allowedSortFields =
+                java.util.Set.of(
+                        "id", "amount", "expenseDate",
+                        "category", "status");
+
+        if (!allowedSortFields.contains(sortBy)) {
+            throw new IllegalArgumentException(
+                    "Invalid sort field: " + sortBy);
+        }
+
+        Sort.Direction sortDirection;
+
+        try {
+            sortDirection = Sort.Direction.fromString(direction);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(
+                    "Direction must be asc or desc");
+        }
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(sortDirection, sortBy)
+                        .and(Sort.by("id").ascending())
+        );
+
+        return expenseRepository.findAll(
+                ExpenseSpecification.withFilters(
+                        status, category, employeeId),
+                pageable
+        ).map(this::mapToResponse);
+    }
+
 }

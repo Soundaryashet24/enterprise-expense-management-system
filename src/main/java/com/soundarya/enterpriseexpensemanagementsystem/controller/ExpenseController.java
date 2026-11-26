@@ -4,7 +4,8 @@ package com.soundarya.enterpriseexpensemanagementsystem.controller;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.ExpenseRequestDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.dto.ExpenseResponseDTO;
 import com.soundarya.enterpriseexpensemanagementsystem.service.ExpenseService;
-
+import com.soundarya.enterpriseexpensemanagementsystem.entity.ExpenseStatus;
+import org.springframework.data.domain.Page;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,11 +25,34 @@ public class ExpenseController {
         this.expenseService = expenseService;
     }
 
+
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping
-    public ResponseEntity<List<ExpenseResponseDTO>> getAllExpenses() {
-        return ResponseEntity.ok(expenseService.getAllExpenses());
+    public ResponseEntity<Page<ExpenseResponseDTO>> getAllExpenses(
+            @RequestParam(required = false) ExpenseStatus status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long employeeId,
+
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+
+            @RequestParam(defaultValue = "expenseDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Page<ExpenseResponseDTO> result =
+                expenseService.searchExpenses(
+                        status,
+                        category,
+                        employeeId,
+                        page,
+                        size,
+                        sortBy,
+                        direction
+                );
+
+        return ResponseEntity.ok(result);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ExpenseResponseDTO> getExpenseById(
